@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume Builder</title>
+    <title>Dynamic Resume Builder</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css/styles.css">
+    
 </head>
 <body>
     <header>
-        <h1>Resume Builder</h1>
+        <h1>Sufyan's Resume Builder</h1>
     </header>
     <nav class="navbar">
         <ul>
@@ -18,7 +19,7 @@
         </ul>
     </nav>
     <div class="container">
-        <!-- Form Section -->
+        <!-- Form -->
         <section id="form">
             <h2>Fill Your Details</h2>
             <form id="form">
@@ -28,6 +29,8 @@
                     <input type="text" id="name" name="name" required>
                     <label for="email">Email:</label>
                     <input type="email" id="email" name="email" required>
+                    <label for="profile-pic">Profile Picture:</label>
+                    <input type="file" id="profile-pic" name="profile-pic" accept="image/*">
                 </fieldset>
                 <fieldset>
                     <legend>Education</legend>
@@ -48,16 +51,15 @@
             </form>
         </section>
 
-    <!-- Resume -->
-<section id="resume">
-    <h2>Resume</h2>
-    <div id="resume-content"></div>
-    <button id="edit-btn">Edit</button>
-    <button id="download-pdf">Download PDF</button>
-    <button id="generate-url">Generate URL</button>
-    <p id="resume-url"></p> <!-- This paragraph will display the generated URL -->
-</section>
-
+        <!-- Resume -->
+        <section id="resume">
+            <h2> Resume</h2>
+            <div id="resume-content"></div>
+            <button id="edit-btn">Edit</button>
+            <button id="download-pdf">Download PDF</button>
+            <button id="generate-url">Generate URL</button>
+        </section>
+    </div>
     
     <footer class="footer" id="footer">
         <div class="footer-content">
@@ -71,9 +73,12 @@
         </div>
     </footer>
 
-    <!-- jsPDF Script -->
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Your custom script -->
+    
     <script src="script/index.js" defer></script>
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
 </body>
 </html>

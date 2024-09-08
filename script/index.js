@@ -4,10 +4,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var downloadBtn = document.getElementById('download-pdf');
     var generateUrlBtn = document.getElementById('generate-url');
     var resumeSection = document.getElementById('resume-content');
-    var resumeUrlElement = document.getElementById('resume-url');
     var isEditing = false;
-    var resumeURL = null;
     form.addEventListener('submit', function (event) {
+        var _a;
         event.preventDefault();
         // Get data from form
         var name = document.getElementById('name').value;
@@ -15,12 +14,16 @@ document.addEventListener('DOMContentLoaded', function () {
         var education = document.getElementById('education').value;
         var experience = document.getElementById('experience').value;
         var skills = document.getElementById('skills').value.split(',');
+        var profilePic = (_a = document.getElementById('profile-pic').files) === null || _a === void 0 ? void 0 : _a[0];
         // Generate resume
         if (resumeSection) {
-            resumeSection.innerHTML = "\n                <h2 id=\"resume-name\">".concat(name, "'s Resume</h2>\n                <p id=\"resume-email\" class=\"editable\" contenteditable=\"false\">Email: ").concat(email, "</p>\n                <h3>Education</h3>\n                <p id=\"resume-education\" class=\"editable\" contenteditable=\"false\">").concat(education, "</p>\n                <h3>Work Experience</h3>\n                <p id=\"resume-experience\" class=\"editable\" contenteditable=\"false\">").concat(experience, "</p>\n                <h3>Skills</h3>\n                <ul id=\"resume-skills\">\n                    ").concat(skills.map(function (skill) { return "<li class=\"editable\" contenteditable=\"false\">".concat(skill.trim(), "</li>"); }).join(''), "\n                </ul>\n            ");
-            // Generate unique URL
-            var username = encodeURIComponent(name.toLowerCase().replace(/\s+/g, '-'));
-            resumeURL = "".concat(window.location.origin, "/resume/").concat(username);
+            var reader_1 = new FileReader();
+            reader_1.onloadend = function () {
+                resumeSection.innerHTML = "\n                    <img src=\"".concat(reader_1.result, "\" alt=\"Profile Picture\">\n                    <h2>").concat(name, "'s Resume</h2>\n                    <p class=\"editable\" contenteditable=\"false\">Email: ").concat(email, "</p>\n                    <h3>Education</h3>\n                    <p class=\"editable\" contenteditable=\"false\">").concat(education, "</p>\n                    <h3>Work Experience</h3>\n                    <p class=\"editable\" contenteditable=\"false\">").concat(experience, "</p>\n                    <h3>Skills</h3>\n                    <ul>\n                        ").concat(skills.map(function (skill) { return "<li class=\"editable\" contenteditable=\"false\">".concat(skill.trim(), "</li>"); }).join(''), "\n                    </ul>\n                ");
+            };
+            if (profilePic) {
+                reader_1.readAsDataURL(profilePic);
+            }
         }
     });
     if (editBtn) {
@@ -46,30 +49,27 @@ document.addEventListener('DOMContentLoaded', function () {
     if (downloadBtn) {
         downloadBtn.addEventListener('click', function () {
             if (resumeSection) {
-                var jsPDF = window.jspdf.jsPDF;
-                var doc = new jsPDF();
-                doc.text(resumeSection.innerText, 10, 10);
-                doc.save('resume.pdf');
-            }
-        });
-    }
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', function () {
-            if (resumeSection && resumeURL) {
-                var jsPDF = window.jspdf.jsPDF;
-                var doc = new jsPDF();
-                // Add resume content
-                doc.text(resumeSection.innerText, 10, 10);
-                doc.text("Resume URL: ".concat(resumeURL), 10, 20 + doc.internal.getTextDimensions(resumeSection.innerText).h);
-                doc.save('resume.pdf');
+                var opt = {
+                    margin: 1,
+                    filename: 'resume.pdf',
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: "in", format: "letter", orientation: 'portrait' }
+                };
+                html2pdf().from(resumeSection).set(opt).save();
             }
         });
     }
     if (generateUrlBtn) {
         generateUrlBtn.addEventListener('click', function () {
-            if (resumeURL && resumeUrlElement) {
-                resumeUrlElement.textContent = "Your resume URL: ".concat(resumeURL);
-            }
+            var url = new URL(window.location.href);
+            url.searchParams.set('resume', JSON.stringify({
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                education: document.getElementById('education').value,
+                experience: document.getElementById('experience').value,
+                skills: document.getElementById('skills').value.split(',')
+            }));
+            prompt('Copy this URL to share:', url.href);
         });
     }
 });

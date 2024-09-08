@@ -4,9 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('download-pdf') as HTMLButtonElement;
     const generateUrlBtn = document.getElementById('generate-url') as HTMLButtonElement;
     const resumeSection = document.getElementById('resume-content');
-    const resumeUrlElement = document.getElementById('resume-url');
     let isEditing = false;
-    let resumeURL: string | null = null;
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -17,25 +15,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const education = (document.getElementById('education') as HTMLTextAreaElement).value;
         const experience = (document.getElementById('experience') as HTMLTextAreaElement).value;
         const skills = (document.getElementById('skills') as HTMLInputElement).value.split(',');
-
-        // Generate resume
+        const profilePic = (document.getElementById('profile-pic') as HTMLInputElement).files?.[0];
+        
+        // generation of resume
         if (resumeSection) {
-            resumeSection.innerHTML = `
-                <h2 id="resume-name">${name}'s Resume</h2>
-                <p id="resume-email" class="editable" contenteditable="false">Email: ${email}</p>
-                <h3>Education</h3>
-                <p id="resume-education" class="editable" contenteditable="false">${education}</p>
-                <h3>Work Experience</h3>
-                <p id="resume-experience" class="editable" contenteditable="false">${experience}</p>
-                <h3>Skills</h3>
-                <ul id="resume-skills">
-                    ${skills.map(skill => `<li class="editable" contenteditable="false">${skill.trim()}</li>`).join('')}
-                </ul>
-            `;
-
-            // Generate unique URL
-            const username = encodeURIComponent(name.toLowerCase().replace(/\s+/g, '-'));
-            resumeURL = `${window.location.origin}/resume/${username}`;
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                resumeSection.innerHTML = `
+                    <img src="${reader.result}" alt="Profile Picture">
+                    <h2>${name}'s Resume</h2>
+                    <p class="editable" contenteditable="false">Email: ${email}</p>
+                    <h3>Education</h3>
+                    <p class="editable" contenteditable="false">${education}</p>
+                    <h3>Work Experience</h3>
+                    <p class="editable" contenteditable="false">${experience}</p>
+                    <h3>Skills</h3>
+                    <ul>
+                        ${skills.map(skill => `<li class="editable" contenteditable="false">${skill.trim()}</li>`).join('')}
+                    </ul>
+                `;
+            }
+            if (profilePic) {
+                reader.readAsDataURL(profilePic);
+            }
         }
     });
 
@@ -49,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 editBtn.textContent = 'Edit';
             } else {
-                // Enable editing
+                // editable
                 editableElements.forEach(element => {
                     element.setAttribute('contenteditable', 'true');
                 });
@@ -58,38 +60,32 @@ document.addEventListener('DOMContentLoaded', () => {
             isEditing = !isEditing;
         });
     }
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', () => {
-            if (resumeSection) {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.text(resumeSection.innerText, 10, 10);
-                doc.save('resume.pdf');
-            }
-        });
-    }
 
     if (downloadBtn) {
         downloadBtn.addEventListener('click', () => {
-            if (resumeSection && resumeURL) {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                
-                // Add resume content
-                doc.text(resumeSection.innerText, 10, 10);
-                
-                doc.text(`Resume URL: ${resumeURL}`, 10, 20 + doc.internal.getTextDimensions(resumeSection.innerText).h);
-                
-                doc.save('resume.pdf');
+            if (resumeSection) {
+                const opt = {
+                    margin: 1,
+                    filename: 'resume.pdf',
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: "in", format: "letter", orientation: 'portrait' }
+                };
+                html2pdf().from(resumeSection).set(opt).save();
             }
         });
     }
 
     if (generateUrlBtn) {
         generateUrlBtn.addEventListener('click', () => {
-            if (resumeURL && resumeUrlElement) {
-                resumeUrlElement.textContent = `Your resume URL: ${resumeURL}`;
-            } 
+            const url = new URL(window.location.href);
+            url.searchParams.set('resume', JSON.stringify({
+                name: (document.getElementById('name') as HTMLInputElement).value,
+                email: (document.getElementById('email') as HTMLInputElement).value,
+                education: (document.getElementById('education') as HTMLTextAreaElement).value,
+                experience: (document.getElementById('experience') as HTMLTextAreaElement).value,
+                skills: (document.getElementById('skills') as HTMLInputElement).value.split(',')
+            }));
+            prompt('Copy this URL to share:', url.href);
         });
     }
 });
